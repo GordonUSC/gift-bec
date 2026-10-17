@@ -1,0 +1,18 @@
+{
+ "img/hero.jpg": {
+  "tool": "higgsfield",
+  "prompt": "neon podcast studio with pink pixel wall (job ed8eb2b3) gpt_image_2_5"
+ },
+ "snd/pixel.mp3": {
+  "tool": "elevenlabs",
+  "prompt": "pink pixel pop (flow tlK7fqLxI5F9SxIXDWC4)"
+ },
+ "snd/cheer.mp3": {
+  "tool": "elevenlabs",
+  "prompt": "awards audience cheer (flow tlK7fqLxI5F9SxIXDWC4)"
+ },
+ "snd/bed.mp3": {
+  "tool": "elevenlabs",
+  "prompt": "synth-pop podcast bed, eleven_music_v2_5, crossfade loop (flow tlK7fqLxI5F9SxIXDWC4)"
+ }
+}

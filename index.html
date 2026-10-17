@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- STYLE: Neon podcast studio pixel wall (hot pink and magenta on deep plum, Press Start-free: Rubik Mono One with Nunito) | WHY: Bec hosts Pink Pixels, 100-plus interviews with women in gaming, and was named PodcastHer of the Year, so the gift is a pixel wall she lights one voice at a time | ALT: a DM screen dice toy, rejected because her table work is private and today already had a d20 -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pink Pixels</title>
+<meta name="description" content="A wall of voices, for Bec.">
+<meta property="og:title" content="Pink Pixels">
+<meta property="og:image" content="https://gordonusc.github.io/gift-bec/img/hero.jpg">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Nunito:wght@600;800&display=swap">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;-webkit-user-select:none;user-select:none;touch-action:none}
+.stage{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);width:min(100vw,calc(100svh*9/16));overflow:hidden}
+.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+canvas{position:absolute;inset:0;width:100%;height:100%}
+.top{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 18px);text-align:center;padding:0 18px;pointer-events:none}
+.end{position:absolute;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 64px);text-align:center;padding:18px;border-radius:14px;opacity:0;transform:translateY(10px);transition:opacity .7s,transform .7s;pointer-events:none}
+.end.on{opacity:1;transform:none}
+.hint{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 34px);text-align:center;pointer-events:none}
+.foot{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);text-align:center;font-size:11px;opacity:.75;pointer-events:none}
+html,body{background:#1a0716;color:#fff;font-family:Nunito,system-ui,sans-serif}
+.bg{filter:brightness(.55) saturate(1.1)}
+.top small{font:400 11px 'Rubik Mono One',sans-serif;letter-spacing:.2em;color:#ff7ad9}
+.top h1{font:400 clamp(30px,10vw,44px)/1 'Rubik Mono One',sans-serif;margin:8px 0 8px;color:#fff;text-shadow:0 0 18px #ff3fb4}
+.top p{margin:0 auto;max-width:30ch;font-weight:700;text-shadow:0 2px 10px #000}
+.count{position:absolute;left:0;right:0;top:calc(30% - 28px);text-align:center;font:400 14px 'Rubik Mono One',sans-serif;color:#ffd1f1;text-shadow:0 0 10px #ff3fb4;pointer-events:none}
+.end{background:#2a0b25ee;border:2px solid #ff3fb4;box-shadow:0 0 30px #ff3fb466}
+.end h2{font:400 18px/1.3 'Rubik Mono One',sans-serif;margin:0 0 8px;color:#ff9be3}
+.hint{font-weight:800;font-size:13px;letter-spacing:.06em;color:#ffd1f1}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <img class="bg" src="img/hero.jpg" alt="A neon podcast studio with a microphone in front of a glowing pink pixel wall">
+  <canvas id="c"></canvas>
+  <div class="top"><small>FOR BEC</small><h1>PINK PIXELS</h1><p>100-plus interviews lifting women in games. Paint the wall: every pixel is a voice you amplified.</p></div>
+  <div class="count" id="n">0 / 100 VOICES</div>
+  <div class="hint" id="hint">DRAG ACROSS THE WALL</div>
+  <div class="end" id="end"><h2>ON AIR, EVERY WEEK</h2>PodcastHer of the Year, and so much more: you make room for voices that need it. Thank you, Bec. With love from Gordon.</div>
+  <div class="foot">made by Darby, Gordon's AI assistant, with love from Gordon</div>
+</div>
+<script>
+// ElevenLabs sound design; code only mixes.
+const SND=['pixel','cheer','bed'];
+let ac=null, master=null, bufs={};
+function audio(){ if(!ac){ try{ ac=new (window.AudioContext||window.webkitAudioContext)(); master=ac.createGain(); master.gain.value=.9; master.connect(ac.destination); SND.forEach(load);}catch(e){} } if(ac&&ac.state==='suspended') ac.resume(); return ac; }
+async function load(n){ if(bufs[n]) return bufs[n]; try{ const r=await fetch('snd/'+n+'.mp3'); const a=await r.arrayBuffer(); bufs[n]=await new Promise((ok,no)=>ac.decodeAudioData(a,ok,no)); }catch(e){} return bufs[n]; }
+async function play(n,vol=1,loop=false,rate=1){ if(!audio()) return null; const b=await load(n); if(!b) return null; const s=ac.createBufferSource(), g=ac.createGain(); s.buffer=b; s.loop=loop; s.playbackRate.value=rate; g.gain.value=vol; s.connect(g).connect(master); s.start(); return {s,g}; }
+function fade(h,v,t=.4){ if(h&&ac) h.g.gain.setTargetAtTime(v,ac.currentTime,t); }
+const $=s=>document.querySelector(s);
+const c=$('#c'), x=c.getContext('2d'), D=Math.min(devicePixelRatio||1,2);
+function size(){ c.width=c.clientWidth*D; c.height=c.clientHeight*D; } size(); addEventListener('resize',size);
+function pt(e){ const r=c.getBoundingClientRect(); return [(e.clientX-r.left)*D,(e.clientY-r.top)*D]; }
+
+const COLS=10, ROWS=10; let lit=new Set(), done=false, bed=null, last=0;
+const HEART=new Set(); for(let r=0;r<ROWS;r++) for(let q=0;q<COLS;q++){ const u=(q-4.5)/4.2, v=(r-4)/4.2; if(Math.pow(u*u+v*v-1,3)-u*u*v*v*v<0) HEART.add(r*COLS+q); }
+function grid(){ const W=c.width,H=c.height, s=Math.min(W*.86/COLS,H*.5/ROWS), gx=(W-s*COLS)/2, gy=H*.3; return {s,gx,gy}; }
+function cellAt(px,py){ const {s,gx,gy}=grid(); const q=Math.floor((px-gx)/s), r=Math.floor((py-gy)/s); if(q<0||r<0||q>=COLS||r>=ROWS) return -1; return r*COLS+q; }
+function hit(e){ const [px,py]=pt(e); const k0=cellAt(px,py); if(k0<0||done) return; const r0=Math.floor(k0/COLS), q0=k0%COLS; let k=-1; [[0,0],[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dq])=>{ const r=r0+dr,q=q0+dq; if(r>=0&&r<ROWS&&q>=0&&q<COLS){ const kk=r*COLS+q; if(!lit.has(kk)){ lit.add(kk); k=kk; } } }); if(k<0) return; const now=performance.now(); if(now-last>45){ play('pixel',.55,false,.85+(k%COLS)*.04); last=now; }
+  $('#n').textContent=lit.size+' / 100 VOICES'; if(lit.size>=COLS*ROWS){ done=true; $('#hint').style.display='none'; play('cheer',.85); fade(bed,.2); setTimeout(()=>$('#end').classList.add('on'),600); } }
+let down=false;
+c.addEventListener('pointerdown',e=>{ audio(); if(!bed) play('bed',.35,true).then(h=>bed=h); down=true; hit(e); });
+c.addEventListener('pointermove',e=>{ if(down) hit(e); }); addEventListener('pointerup',()=>down=false);
+(function loop(t){ x.clearRect(0,0,c.width,c.height); const {s,gx,gy}=grid();
+  for(let r=0;r<ROWS;r++) for(let q=0;q<COLS;q++){ const k=r*COLS+q, on=lit.has(k), X=gx+q*s, Y=gy+r*s;
+    let col=on?'#ff3fb4':'rgba(255,122,217,.12)'; if(done&&HEART.has(k)) col=`hsl(${320+12*Math.sin(t/300+k)},100%,${62+8*Math.sin(t/200+k)}%)`;
+    x.fillStyle=col; x.shadowColor='#ff3fb4'; x.shadowBlur=on?14*D:0; x.fillRect(X+2*D,Y+2*D,s-4*D,s-4*D); }
+  x.shadowBlur=0; requestAnimationFrame(loop); })(0);
+</script>
+</body>
+</html>
